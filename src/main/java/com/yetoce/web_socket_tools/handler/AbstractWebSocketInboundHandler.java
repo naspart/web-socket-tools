@@ -39,7 +39,7 @@ public abstract class AbstractWebSocketInboundHandler extends ChannelInboundHand
             }
 
             String uid = parameters.get("uid").get(0);
-            log.debug("New connection start, uid: " + uid);
+            log.debug("A client start establishing a connection, uid: " + uid);
 
             DefaultWebSocketSession webSocketSession = new DefaultWebSocketSession();
             webSocketSession.setParameters(parameters);
