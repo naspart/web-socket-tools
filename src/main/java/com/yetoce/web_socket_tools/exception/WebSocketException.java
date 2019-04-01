@@ -1,4 +1,4 @@
-package com.rolbel.web_socket_tools.exception;
+package com.yetoce.web_socket_tools.exception;
 
 public class WebSocketException extends Exception {
     public WebSocketException(String message) {

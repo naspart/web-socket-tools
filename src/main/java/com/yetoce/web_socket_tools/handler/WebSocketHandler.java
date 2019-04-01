@@ -1,7 +1,7 @@
-package com.rolbel.web_socket_tools.handler;
+package com.yetoce.web_socket_tools.handler;
 
-import com.rolbel.web_socket_tools.CloseStatus;
-import com.rolbel.web_socket_tools.session.WebSocketSession;
+import com.yetoce.web_socket_tools.CloseStatus;
+import com.yetoce.web_socket_tools.session.WebSocketSession;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 
 public interface WebSocketHandler {

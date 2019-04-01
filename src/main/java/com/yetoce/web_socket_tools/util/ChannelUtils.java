@@ -1,6 +1,6 @@
-package com.rolbel.web_socket_tools.util;
+package com.yetoce.web_socket_tools.util;
 
-import com.rolbel.web_socket_tools.session.WebSocketSession;
+import com.yetoce.web_socket_tools.session.WebSocketSession;
 import io.netty.channel.Channel;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
