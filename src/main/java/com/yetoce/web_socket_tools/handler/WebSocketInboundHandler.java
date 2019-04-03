@@ -1,5 +1,6 @@
 package com.yetoce.web_socket_tools.handler;
 
+import com.yetoce.web_socket_tools.exception.WebSocketException;
 import com.yetoce.web_socket_tools.session.WebSocketSession;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -33,18 +34,26 @@ public class WebSocketInboundHandler extends AbstractWebSocketInboundHandler {
     }
 
     @Override
-    public void doChannelRead(WebSocketSession session, WebSocketFrame msg) throws Exception {
+    public void doChannelRead(WebSocketSession session, WebSocketFrame msg) throws WebSocketException {
         WebSocketHandler handler = session.getWebSocketHandler();
         handler.handleMessage(session, msg);
     }
 
     @Override
-    public void doExceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void doChannelTimeout(WebSocketSession session) throws WebSocketException {
+        WebSocketHandler handler = session.getWebSocketHandler();
+        handler.handleTimeout(session);
+    }
+
+    @Override
+    public void doExceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        log.warn(cause.getMessage(), cause);
+
         if (ctx.channel().isActive()) {
             FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR, Unpooled.copiedBuffer("Failed : " + INTERNAL_SERVER_ERROR.toString() + "\r\n", CharsetUtil.UTF_8));
             response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
 
-            ctx.channel().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+            ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
         }
     }
 }

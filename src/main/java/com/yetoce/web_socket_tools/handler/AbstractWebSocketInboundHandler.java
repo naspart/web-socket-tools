@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class AbstractWebSocketInboundHandler extends ChannelInboundHandlerAdapter {
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private AtomicInteger idleCount = new AtomicInteger(1);
 
@@ -47,10 +47,8 @@ public abstract class AbstractWebSocketInboundHandler extends ChannelInboundHand
             log.debug("A client start establishing a connection, uid: " + uid);
 
             DefaultWebSocketSession webSocketSession = new DefaultWebSocketSession();
-            webSocketSession.setParameters(parameters);
-            webSocketSession.setHandShakeHeaders(request.headers());
-            webSocketSession.setChannel(ctx.channel());
             webSocketSession.setId(uid);
+            webSocketSession.setChannelHandlerContext(ctx);
 
             WebSocketHandler socketHandler = this.getSocketHandler(path);
             webSocketSession.setWebSocketHandler(socketHandler);
@@ -62,9 +60,16 @@ public abstract class AbstractWebSocketInboundHandler extends ChannelInboundHand
                 return;
             }
 
-            WebSocketServerHandshaker handShaker = this.getWebSocketUpgradeResolverHandler().handleRequest(ctx, request);
-            if (handShaker != null) {
-                webSocketSession.setWebSocketHandshaker(handShaker);
+            WebSocketServerHandshaker webSocketServerHandshaker = null;
+            try {
+                webSocketServerHandshaker = this.getWebSocketUpgradeResolverHandler().handleRequest(webSocketSession, request);
+            } catch (Exception ex) {
+                log.warn(ex.getMessage(), ex);
+                this.getWebSocketUpgradeResolverHandler().handleRequestError(webSocketSession, request, new WebSocketException("upgrade failed.!"));
+            }
+
+            if (webSocketServerHandshaker != null) {
+                webSocketSession.setWebSocketServerHandshaker(webSocketServerHandshaker);
 
                 if (!ChannelUtils.addChannelSession(ctx.channel(), webSocketSession)) {
                     ctx.channel().close();
@@ -101,7 +106,8 @@ public abstract class AbstractWebSocketInboundHandler extends ChannelInboundHand
 
                     WebSocketSession session = ChannelUtils.getSessionByChannel(ctx.channel());
                     if (session != null) {
-                        session.getChannel().close();
+                        this.doChannelTimeout(session);
+                        session.getChannelHandlerContext().channel().close();
                         WebSocketSessionGroup.remove(session);
                     } else {
                         ctx.channel().close();
@@ -115,7 +121,7 @@ public abstract class AbstractWebSocketInboundHandler extends ChannelInboundHand
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws WebSocketException {
         this.doExceptionCaught(ctx, cause);
     }
 
@@ -123,7 +129,9 @@ public abstract class AbstractWebSocketInboundHandler extends ChannelInboundHand
 
     public abstract WebSocketHandler getSocketHandler(String path);
 
-    public abstract void doChannelRead(WebSocketSession session, WebSocketFrame msg) throws Exception;
+    public abstract void doChannelRead(WebSocketSession session, WebSocketFrame msg) throws WebSocketException;
 
-    public abstract void doExceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception;
+    public abstract void doChannelTimeout(WebSocketSession session) throws WebSocketException;
+
+    public abstract void doExceptionCaught(ChannelHandlerContext ctx, Throwable cause);
 }

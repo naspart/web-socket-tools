@@ -1,28 +1,20 @@
 package com.yetoce.web_socket_tools.session;
 
 import com.yetoce.web_socket_tools.handler.WebSocketHandler;
-import io.netty.channel.Channel;
-import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker;
 
-import java.util.List;
-import java.util.Map;
-
 public interface WebSocketSession {
-    Channel getChannel();
-
     String getId();
 
-    Map<String, List<String>> getParameters();
-
-    HttpHeaders getHandShakeHeaders();
+    ChannelHandlerContext getChannelHandlerContext();
 
     void sendMessage(WebSocketFrame webSocketFrame);
 
-    void close();
-
     WebSocketHandler getWebSocketHandler();
 
-    WebSocketServerHandshaker getWebSocketHandshaker();
+    WebSocketServerHandshaker getWebSocketServerHandshaker();
+
+    void close();
 }

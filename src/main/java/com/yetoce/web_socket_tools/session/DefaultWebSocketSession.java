@@ -2,32 +2,16 @@ package com.yetoce.web_socket_tools.session;
 
 import com.yetoce.web_socket_tools.CloseStatus;
 import com.yetoce.web_socket_tools.handler.WebSocketHandler;
-import io.netty.channel.Channel;
-import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker;
 
-import java.util.List;
-import java.util.Map;
-
 public class DefaultWebSocketSession implements WebSocketSession {
-    private Channel channel;
     private String id;
-    private HttpHeaders handShakeHeaders;
-    private Map<String, List<String>> parameters;
+    private ChannelHandlerContext channelHandlerContext;
     private WebSocketHandler webSocketHandler;
-    private WebSocketServerHandshaker webSocketHandshaker;
-
-    @Override
-    public Map<String, List<String>> getParameters() {
-        return this.parameters;
-    }
-
-    @Override
-    public Channel getChannel() {
-        return this.channel;
-    }
+    private WebSocketServerHandshaker webSocketServerHandshaker;
 
     @Override
     public String getId() {
@@ -35,22 +19,14 @@ public class DefaultWebSocketSession implements WebSocketSession {
     }
 
     @Override
-    public HttpHeaders getHandShakeHeaders() {
-        return this.handShakeHeaders;
+    public ChannelHandlerContext getChannelHandlerContext() {
+        return this.channelHandlerContext;
     }
 
     @Override
     public void sendMessage(WebSocketFrame webSocketFrame) {
-        if (this.channel.isOpen() && this.channel.isActive()) {
-            this.channel.writeAndFlush(webSocketFrame);
-        }
-    }
-
-    @Override
-    public void close() {
-        if (this.webSocketHandshaker != null && this.channel != null && this.channel.isOpen()) {
-            CloseWebSocketFrame closeWebSocketFrame = new CloseWebSocketFrame(CloseStatus.NORMAL.getCode(), CloseStatus.NORMAL.getReason());
-            this.webSocketHandshaker.close(this.channel, closeWebSocketFrame);
+        if (this.channelHandlerContext.channel().isOpen() && this.channelHandlerContext.channel().isActive()) {
+            this.channelHandlerContext.writeAndFlush(webSocketFrame);
         }
     }
 
@@ -60,31 +36,35 @@ public class DefaultWebSocketSession implements WebSocketSession {
     }
 
     @Override
-    public WebSocketServerHandshaker getWebSocketHandshaker() {
-        return this.webSocketHandshaker;
+    public WebSocketServerHandshaker getWebSocketServerHandshaker() {
+        return this.webSocketServerHandshaker;
     }
 
-    public void setChannel(Channel channel) {
-        this.channel = channel;
+    @Override
+    public void close() {
+        if (this.channelHandlerContext != null && this.channelHandlerContext.channel().isOpen()) {
+            if (this.webSocketServerHandshaker != null) {
+                CloseWebSocketFrame closeWebSocketFrame = new CloseWebSocketFrame(CloseStatus.NORMAL.getCode(), CloseStatus.NORMAL.getReason());
+                this.webSocketServerHandshaker.close(this.channelHandlerContext.channel(), closeWebSocketFrame);
+            }
+
+            this.channelHandlerContext.channel().close();
+        }
     }
 
     public void setId(String id) {
         this.id = id;
     }
 
-    public void setHandShakeHeaders(HttpHeaders handShakeHeaders) {
-        this.handShakeHeaders = handShakeHeaders;
-    }
-
-    public void setParameters(Map<String, List<String>> parameters) {
-        this.parameters = parameters;
+    public void setChannelHandlerContext(ChannelHandlerContext channelHandlerContext) {
+        this.channelHandlerContext = channelHandlerContext;
     }
 
     public void setWebSocketHandler(WebSocketHandler webSocketHandler) {
         this.webSocketHandler = webSocketHandler;
     }
 
-    public void setWebSocketHandshaker(WebSocketServerHandshaker webSocketHandshaker) {
-        this.webSocketHandshaker = webSocketHandshaker;
+    public void setWebSocketServerHandshaker(WebSocketServerHandshaker webSocketServerHandshaker) {
+        this.webSocketServerHandshaker = webSocketServerHandshaker;
     }
 }
