@@ -4,21 +4,21 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 
 public abstract class AbstractWebSocketChannelHandler implements WebSocketChannelHandler {
-    private WebSocketInboundHandler webSocketInboundHandler;
-    private WebSocketOutboundHandler webSocketOutboundHandler;
+    private WebSocketHandler webSocketHandler;
+    private WebSocketUpgradeResolverHandler webSocketUpgradeResolverHandler;
 
     public AbstractWebSocketChannelHandler(WebSocketUpgradeResolverHandler webSocketUpgradeResolverHandler, WebSocketHandler webSocketHandler) {
-        webSocketInboundHandler = new WebSocketInboundHandler(webSocketHandler, webSocketUpgradeResolverHandler);
-        webSocketOutboundHandler = new WebSocketOutboundHandler();
+        this.webSocketHandler = webSocketHandler;
+        this.webSocketUpgradeResolverHandler = webSocketUpgradeResolverHandler;
     }
 
     @Override
     public ChannelInboundHandlerAdapter getWebSocketInboundHandler() {
-        return this.webSocketInboundHandler;
+        return new WebSocketInboundHandler(webSocketHandler, webSocketUpgradeResolverHandler);
     }
 
     @Override
     public ChannelOutboundHandlerAdapter getWebSocketOutboundHandler() {
-        return this.webSocketOutboundHandler;
+        return new WebSocketOutboundHandler();
     }
 }
