@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class AbstractWebSocketInboundHandler extends ChannelInboundHandlerAdapter {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private AtomicInteger idle_count = new AtomicInteger(1);
+    private AtomicInteger idleCount = new AtomicInteger(1);
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -91,18 +91,23 @@ public abstract class AbstractWebSocketInboundHandler extends ChannelInboundHand
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        super.userEventTriggered(ctx, evt);
-
         if (evt instanceof IdleStateEvent) {
+            log.debug("Start check the client status ...");
             IdleStateEvent event = (IdleStateEvent) evt;
-            // 如果读通道处于空闲状态，说明没有接收到心跳命令
             if (IdleState.READER_IDLE.equals(event.state())) {
-                log.info("已经5秒没有接收到客户端的信息了");
-                if (idle_count.get() > 1) {
-                    log.info("关闭这个不活跃的channel");
-                    ctx.channel().close();
+                log.debug("Packets have not been received for too long, round " + idleCount);
+                if (idleCount.get() > 2) {
+                    log.debug("Close this inactive channel ...");
+
+                    WebSocketSession session = ChannelUtils.getSessionByChannel(ctx.channel());
+                    if (session != null) {
+                        session.getChannel().close();
+                        WebSocketSessionGroup.remove(session);
+                    } else {
+                        ctx.channel().close();
+                    }
                 }
-                idle_count.getAndIncrement();
+                idleCount.getAndIncrement();
             }
         } else {
             super.userEventTriggered(ctx, evt);
