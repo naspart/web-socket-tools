@@ -17,12 +17,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class AbstractWebSocketInboundHandler extends ChannelInboundHandlerAdapter {
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
-    private AtomicInteger idleCount = new AtomicInteger(1);
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -61,10 +58,9 @@ public abstract class AbstractWebSocketInboundHandler extends ChannelInboundHand
 
             WebSocketServerHandshaker webSocketServerHandshaker = null;
             try {
-                webSocketServerHandshaker = this.getWebSocketUpgradeResolverHandler().handleRequest(webSocketSession, request);
+                webSocketServerHandshaker = this.doHandshake(webSocketSession, request);
             } catch (Exception ex) {
                 log.warn(ex.getMessage(), ex);
-                this.getWebSocketUpgradeResolverHandler().handleRequestError(webSocketSession, request, new WebSocketException("upgrade failed.!"));
             }
 
             if (webSocketServerHandshaker != null) {
@@ -97,18 +93,15 @@ public abstract class AbstractWebSocketInboundHandler extends ChannelInboundHand
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;
             if (IdleState.READER_IDLE.equals(event.state())) {
-                log.debug("Packets have not been received for too long, round " + idleCount);
-                if (idleCount.get() > 2) {
-                    WebSocketSession session = ChannelUtils.getSessionByChannel(ctx.channel());
-                    if (session != null) {
-                        this.doChannelTimeout(session);
-                        log.debug("Close this inactive channel: " + session.getId());
-                        session.close();
-                    } else {
-                        ctx.channel().close();
-                    }
+                log.debug("Packets have not been received for too long");
+                WebSocketSession session = ChannelUtils.getSessionByChannel(ctx.channel());
+                if (session != null) {
+                    this.doChannelTimeout(session);
+                    log.debug("Close this inactive channel: " + session.getId());
+                    session.close();
+                } else {
+                    ctx.channel().close();
                 }
-                idleCount.getAndIncrement();
             }
         } else {
             super.userEventTriggered(ctx, evt);
@@ -120,7 +113,7 @@ public abstract class AbstractWebSocketInboundHandler extends ChannelInboundHand
         this.doExceptionCaught(ctx, cause);
     }
 
-    public abstract WebSocketUpgradeResolverHandler getWebSocketUpgradeResolverHandler();
+    public abstract WebSocketServerHandshaker doHandshake(WebSocketSession session, FullHttpRequest request);
 
     public abstract WebSocketHandler getSocketHandler(String path);
 
