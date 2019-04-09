@@ -1,6 +1,5 @@
 package com.yetoce.web_socket_tools.handler;
 
-import com.yetoce.web_socket_tools.CloseStatus;
 import com.yetoce.web_socket_tools.exception.WebSocketException;
 import com.yetoce.web_socket_tools.session.DefaultWebSocketSession;
 import com.yetoce.web_socket_tools.session.WebSocketSession;
@@ -81,14 +80,13 @@ public abstract class AbstractWebSocketInboundHandler extends ChannelInboundHand
                 socketHandler.handleTransportError(webSocketSession, new WebSocketException("upgrade failed.!"));
             }
         } else if (msg instanceof CloseWebSocketFrame) {
+            log.info("关闭连接消息");
             WebSocketSession session = ChannelUtils.getSessionByChannel(ctx.channel());
             if (session != null) {
-                WebSocketSessionGroup.remove(session);
                 session.close();
-                session.getWebSocketHandler().afterConnectionClosed(session, CloseStatus.NORMAL);
             }
         } else if (msg instanceof PingWebSocketFrame) {
-            ctx.channel().write(new PongWebSocketFrame(((WebSocketFrame) msg).content().retain()));
+            ctx.write(new PongWebSocketFrame(((WebSocketFrame) msg).content().retain()));
         } else if (msg instanceof TextWebSocketFrame) {
             this.doChannelRead(ChannelUtils.getSessionByChannel(ctx.channel()), (WebSocketFrame) msg);
         }
@@ -97,18 +95,15 @@ public abstract class AbstractWebSocketInboundHandler extends ChannelInboundHand
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
-            log.debug("Start check the client status ...");
             IdleStateEvent event = (IdleStateEvent) evt;
             if (IdleState.READER_IDLE.equals(event.state())) {
                 log.debug("Packets have not been received for too long, round " + idleCount);
                 if (idleCount.get() > 2) {
-                    log.debug("Close this inactive channel ...");
-
                     WebSocketSession session = ChannelUtils.getSessionByChannel(ctx.channel());
                     if (session != null) {
                         this.doChannelTimeout(session);
-                        session.getChannelHandlerContext().channel().close();
-                        WebSocketSessionGroup.remove(session);
+                        log.debug("Close this inactive channel: " + session.getId());
+                        session.close();
                     } else {
                         ctx.channel().close();
                     }
