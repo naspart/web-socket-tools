@@ -47,8 +47,6 @@ public class DefaultWebSocketSession implements WebSocketSession {
                 CloseWebSocketFrame closeWebSocketFrame = new CloseWebSocketFrame(CloseStatus.NORMAL.getCode(), CloseStatus.NORMAL.getReason());
                 this.webSocketServerHandshaker.close(this.channelHandlerContext.channel(), closeWebSocketFrame);
             }
-
-            this.channelHandlerContext.channel().close();
         }
     }
 

@@ -30,7 +30,7 @@ public abstract class AbstractWebSocketInboundHandler extends ChannelInboundHand
             Map<String, List<String>> parameters = uriDecoder.parameters();
 
             if (parameters.get("uid") == null || parameters.get("uid").size() == 0) {
-                ctx.channel().close();
+                ctx.close();
                 return;
             }
 
@@ -67,7 +67,7 @@ public abstract class AbstractWebSocketInboundHandler extends ChannelInboundHand
                 webSocketSession.setWebSocketServerHandshaker(webSocketServerHandshaker);
 
                 if (!ChannelUtils.addChannelSession(ctx.channel(), webSocketSession)) {
-                    ctx.channel().close();
+                    ctx.close();
                 }
 
                 socketHandler.afterConnectionEstablished(webSocketSession);
@@ -75,16 +75,17 @@ public abstract class AbstractWebSocketInboundHandler extends ChannelInboundHand
             } else {
                 socketHandler.handleTransportError(webSocketSession, new WebSocketException("upgrade failed.!"));
             }
-        } else if (msg instanceof CloseWebSocketFrame) {
-            log.info("关闭连接消息");
-            WebSocketSession session = ChannelUtils.getSessionByChannel(ctx.channel());
-            if (session != null) {
-                session.close();
-            }
         } else if (msg instanceof PingWebSocketFrame) {
             ctx.write(new PongWebSocketFrame(((WebSocketFrame) msg).content().retain()));
+        } else if (msg instanceof CloseWebSocketFrame) {
+            ctx.close();
         } else if (msg instanceof TextWebSocketFrame) {
-            this.doChannelRead(ChannelUtils.getSessionByChannel(ctx.channel()), (WebSocketFrame) msg);
+            WebSocketSession session = ChannelUtils.getSessionByChannel(ctx.channel());
+            if (session == null) {
+                ctx.close();
+            } else {
+                this.doChannelRead(session, (WebSocketFrame) msg);
+            }
         }
     }
 
@@ -98,10 +99,8 @@ public abstract class AbstractWebSocketInboundHandler extends ChannelInboundHand
                 if (session != null) {
                     this.doChannelTimeout(session);
                     log.debug("Close this inactive channel: " + session.getId());
-                    session.close();
-                } else {
-                    ctx.channel().close();
                 }
+                ctx.close();
             }
         } else {
             super.userEventTriggered(ctx, evt);

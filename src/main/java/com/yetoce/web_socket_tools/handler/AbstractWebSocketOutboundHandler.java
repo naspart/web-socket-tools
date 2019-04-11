@@ -10,15 +10,25 @@ import io.netty.channel.ChannelPromise;
 public abstract class AbstractWebSocketOutboundHandler extends ChannelOutboundHandlerAdapter {
     @Override
     public void disconnect(ChannelHandlerContext ctx, ChannelPromise promise) throws WebSocketException {
-        this.doDisconnect(ChannelUtils.getSessionByChannel(ctx.channel()), promise);
+        WebSocketSession session = ChannelUtils.getSessionByChannel(ctx.channel());
+        if (session != null) {
+            this.doDisconnect(session);
+        }
+
+        ctx.disconnect(promise);
     }
 
     @Override
     public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws WebSocketException {
-        this.doClose(ChannelUtils.getSessionByChannel(ctx.channel()), promise);
+        WebSocketSession session = ChannelUtils.getSessionByChannel(ctx.channel());
+        if (session != null) {
+            this.doClose(session);
+        }
+
+        ctx.close(promise);
     }
 
-    public abstract void doDisconnect(WebSocketSession session, ChannelPromise promise) throws WebSocketException;
+    public abstract void doDisconnect(WebSocketSession session) throws WebSocketException;
 
-    public abstract void doClose(WebSocketSession session, ChannelPromise promise) throws WebSocketException;
+    public abstract void doClose(WebSocketSession session) throws WebSocketException;
 }
