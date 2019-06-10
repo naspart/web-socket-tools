@@ -1,4 +1,4 @@
-package com.yetoce.web_socket_tools.constant;
+package com.naspart.web_socket_tools.constant;
 
 public class WebSocketConstant {
     public final static String WEBSOCKET = "websocket";

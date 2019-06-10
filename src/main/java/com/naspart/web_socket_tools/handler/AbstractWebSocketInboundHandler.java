@@ -1,10 +1,10 @@
-package com.yetoce.web_socket_tools.handler;
+package com.naspart.web_socket_tools.handler;
 
-import com.yetoce.web_socket_tools.exception.WebSocketException;
-import com.yetoce.web_socket_tools.session.DefaultWebSocketSession;
-import com.yetoce.web_socket_tools.session.WebSocketSession;
-import com.yetoce.web_socket_tools.session.WebSocketSessionGroup;
-import com.yetoce.web_socket_tools.util.ChannelUtils;
+import com.naspart.web_socket_tools.exception.WebSocketException;
+import com.naspart.web_socket_tools.session.DefaultWebSocketSession;
+import com.naspart.web_socket_tools.session.WebSocketSession;
+import com.naspart.web_socket_tools.session.WebSocketSessionGroup;
+import com.naspart.web_socket_tools.util.ChannelUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.FullHttpRequest;

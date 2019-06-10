@@ -1,4 +1,4 @@
-package com.yetoce.web_socket_tools;
+package com.naspart.web_socket_tools;
 
 public final class CloseStatus {
     public static final CloseStatus NORMAL = new CloseStatus(1000);

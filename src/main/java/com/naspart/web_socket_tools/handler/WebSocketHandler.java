@@ -1,8 +1,8 @@
-package com.yetoce.web_socket_tools.handler;
+package com.naspart.web_socket_tools.handler;
 
-import com.yetoce.web_socket_tools.CloseStatus;
-import com.yetoce.web_socket_tools.exception.WebSocketException;
-import com.yetoce.web_socket_tools.session.WebSocketSession;
+import com.naspart.web_socket_tools.CloseStatus;
+import com.naspart.web_socket_tools.exception.WebSocketException;
+import com.naspart.web_socket_tools.session.WebSocketSession;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 
 public interface WebSocketHandler {

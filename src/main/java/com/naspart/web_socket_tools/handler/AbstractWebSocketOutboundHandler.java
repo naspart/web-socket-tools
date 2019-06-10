@@ -1,8 +1,8 @@
-package com.yetoce.web_socket_tools.handler;
+package com.naspart.web_socket_tools.handler;
 
-import com.yetoce.web_socket_tools.exception.WebSocketException;
-import com.yetoce.web_socket_tools.session.WebSocketSession;
-import com.yetoce.web_socket_tools.util.ChannelUtils;
+import com.naspart.web_socket_tools.exception.WebSocketException;
+import com.naspart.web_socket_tools.session.WebSocketSession;
+import com.naspart.web_socket_tools.util.ChannelUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
