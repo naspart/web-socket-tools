@@ -5,10 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.naspart</groupId>
-    <artifactId>web_socket_tools</artifactId>
+    <artifactId>web-socket-tools</artifactId>
     <version>1.0.0</version>
 
-    <name>web_socket_tools</name>
+    <name>web-socket-tools</name>
     <url>http://www.example.com</url>
 
     <properties>
